@@ -7,14 +7,8 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args){
         Scanner scan = new Scanner(System.in);
-        System.out.println("入力:Main()");
+        System.out.println("入力:Main()");//未実装
         String str = scan.next();
-        /*
-        System.out.println(str);
-        //heroの作成、これでチートが出来上がったり出来上がらなかったり。
-        System.out.println("汝、力を求むか...?");
-        String str = scan.next();
-        */
 
         HeroClass hero = new HeroClass();
 
@@ -23,5 +17,6 @@ public class Main {
             BattleSystem battle = new BattleSystem(hero, level);
             level = battle.BattleDooome();
         }
+        System.out.println(hero.name + "の冒険はここで終わってしまったよ〜(^^)b");
     }//finished method to main()
 }
