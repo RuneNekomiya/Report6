@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+}
+
+group 'Report6_BattleDome'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 10
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.1.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging.showStandardStreams = true
+}
+
+jar {
+    manifest {
+        attributes  "Main-Class": "jp.ac.uryukyu.ie.e185752.Main"
+        attributes 'Implementation-Title': 'Gradle Quickstart', 'Implementation-Version': version
+    }
+}
