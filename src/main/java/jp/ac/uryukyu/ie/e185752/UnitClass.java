@@ -7,7 +7,7 @@ package jp.ac.uryukyu.ie.e185752;
  * 2, 『行動によって変動するステータスやフラグの管理』
  * 3, 『行動の許可やBattleSystemなどに関連する類』
  */
-public class UnitClass {//private化したらえげつないことになったので一度待機
+public class UnitClass {//private化したらえげつないことになったので一度待機 
     String name;
     int maxHp, hp; int notAbleHealFrag = 0;
     int attack;
