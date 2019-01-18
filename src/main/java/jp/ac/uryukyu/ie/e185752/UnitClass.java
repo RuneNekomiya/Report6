@@ -7,7 +7,7 @@ package jp.ac.uryukyu.ie.e185752;
  * 2, 『行動によって変動するステータスやフラグの管理』
  * 3, 『行動の許可やBattleSystemなどに関連する類』
  */
-public class UnitClass {
+public class UnitClass {//private
     String name;
     int maxHp, hp; int notAbleHealFrag = 0;
     int attack;
@@ -15,12 +15,14 @@ public class UnitClass {
     String selectSkill= null;
     UnitClass target = null;
     int skillPriority = 0;
-    /* ここからコマンドリスト. 必要な理由だって? 視認性の問題ですよ. つまり意味はほとんどありません */
+    /* ここからコマンドリスト. --必要な理由だって? コード視認性の問題ですよ, つまり意味はほとんどありません */
     String s_Attack="attack", s_Guard="guard", s_Heal="heal", s_Stop="stop";
 
 
     /**
-     * どのアクションを選択するのかい?
+     * --『行動の許可やBattleSystemなどに関連する類』
+     * 「コマンド選択」→「コマンド読み込み」→「使用順序の選定」→「各自行動開始」の順で行動するキャラクター達.
+     * その内の「コマンド読み込み」に該当するメソッド.
      * 勇者のスキル選択の際のコマンドもこちらに書き込んでしまった...慚愧に堪えぬ(一応仕様という事にしておきますが)
      * @param action どのアクションを起こしたいか. BattleSystem.BattleDooome()参照
      */
@@ -33,15 +35,23 @@ public class UnitClass {
             default: break;
         }
     }
+
+    /**
+     * --『行動の許可やBattleSystemなどに関連する類』
+     * 「コマンド選択」→「コマンド読み込み」→「使用順序の選定」→「各自行動開始」の順で行動するキャラクター達.
+     *  その内の「各自行動開始」に該当するメソッド. 行動を呼び覚ますだけとも言えるが.
+     */
     public void playSkill(){
+        turnStart();
         switch(selectSkill){
             case "attack": attack(target); turnEnd(); break;
-            case "heal"  : heal(target)  ; turnEnd(); break;
+            case "heal"  : heal()        ; turnEnd(); break;
             case "guard" : guard()       ; turnEnd(); break;
             case "stop"  : stop()        ; turnEnd(); break;
             default: break;
         }
     }
+
     /**
      * --『行動の許可やBattleSystemなどに関連する類』
      * 死んだ奴は普通動けないよなぁ??
@@ -49,12 +59,10 @@ public class UnitClass {
      * @return 動けるかの判定. trueなら動ける. 問題があるならfalseだ.
      */
     public boolean canMove(){
-        if(hp<=0){
-            System.out.print(name + "は行動をしようとしていた! しかし" + name + "は死んでいる!!");
-            return false;
-        }
+        if(hp<=0){ return false; }
         else{ return true; }
     }
+
     /**
      * --『行動の許可やBattleSystemなどに関連する類』
      * 状態変化などの変更(または初期化)に用いるメソッドにturnStart()とturnEnd()の二種類があります.
@@ -84,11 +92,6 @@ public class UnitClass {
      * @param damage 減少するダメージ
      */
     public void decreaseHp(int damage){
-        //防御していた場合
-        if(defenceFrag != 0){
-            System.out.print("しかし" + name + "は防御していたためダメージを受けない!");
-            return;
-        }
         //ダメージが負の数またはノーダメージの場合。基本的に起動しない想定
         if(damage <= 0){
             System.out.print("想定されてないエラーが発生:decreaseHp()");
@@ -97,6 +100,11 @@ public class UnitClass {
         //オーバーキルした場合
         if(hp<=0){
             System.out.print("オーバーキルだ! ヒャッハー!");
+        }
+        //防御していた場合
+        if(defenceFrag != 0){
+            System.out.print("しかし" + name + "は防御していたためダメージを受けない!");
+            return;
         }
         //防御していなかった場合
         hp -= damage;
@@ -115,9 +123,15 @@ public class UnitClass {
      * @param heal
      */
     public void increaseHp(int heal){
-        //回復点が負の数またはノーダメージの場合。基本的に起動しない想定
+        //すでに体力最大点の場合
+        if(hp >= maxHp){
+            System.out.print("すでに" + name + "の体力は満タンだ!");
+            return;
+        }
+        //回復点が負の数またはノーダメージの場合。基本的に起動しない想定 → 戦闘後の自動回復で回復０点発動しやがった(怒)
+        //マイナス回復でも回復しない世界線の住民ということにしておきます.
         if(heal <= 0){
-            System.out.print("想定されてないエラーが発生:increaseHp()");
+            System.out.print(name + "に治癒力が働いた! が、失敗した! ");
             return;
         }
         //体力が最大体力と等値又は上回る場合。heal連打した製作者がいるんですよ...基本的に起動しない想定
@@ -139,16 +153,15 @@ public class UnitClass {
      * @return ダメージポイント(但し装甲は加味しない)
      */
     public int damagePoint(float magnification){
-        //乱数=(0.8~1.1)倍 = 0.8+ [0,0.3]
-        double randomNumber = Math.random()*3/10 + 0.8;
+        //乱数=(0.8~1.2)倍 = 0.8+ [0 ~ 0.4]
+        double randomNumber = Math.random()*4/10 + 0.8;
         int damage = (int)(attack * magnification * randomNumber);
         return damage;
     }
 
     /**
      * --『ユニットの行動』
-     * 相手を殺せっ! 純粋な殺意を迸らせろっ!
-     * 殴るだけ。
+     * 殴るだけ. ですがそれは恐るべきものです. なぜならほとんどの生物は頭を潰されたら死ぬしかないのですから.
      * @param target 標的となる敵方
      */
     public void attack(UnitClass target){
@@ -166,8 +179,8 @@ public class UnitClass {
 
     /**
      * --『ユニットの行動』
-     * 絶対防御って響き、かっこいいですよね。理解できる貴方に速報です。これ、実質絶対防御スキルですよ?
-     * defenceFragを立て、その後のdecreaseHp()判定部分に影響してきます。
+     * 絶対防御って響き, かっこいいですよね? 理解できる貴方に速報です! これは, 無制限に発動できる絶対防御スキルですよ?
+     * defenceFragを立て, その後のdecreaseHp()判定部分に影響してきます.
      */
     public void guard(){
         if(canMove()){
@@ -179,14 +192,14 @@ public class UnitClass {
     /**
      * --『ユニットの行動』
      * 最大体力の３割だけ回復します(仮)
-     * 仕様上のスキルとして残してますので、後々効果や発動条件が変わるかもしれませんね。
+     * 仕様上のスキルとして残してますので, 後々効果や発動条件が変わるかもしれません.
      */
-    public void heal(UnitClass target){
+    public void heal(){
         if(canMove()) {
             if(notAbleHealFrag == 0) {
                 notAbleHealFrag += 3;
                 int healPoint = maxHp * 3 / 10;
-                target.increaseHp(healPoint);
+                increaseHp(healPoint);
             }else{
                 System.out.print(name + "は回復中毒になっているため回復できない!");
             }
@@ -199,7 +212,9 @@ public class UnitClass {
      * 何もしません.
      */
     public void stop(){
-        System.out.print(name + "はボケーっとしている!");
+        if(canMove()) {
+            System.out.print(name + "はボケーっとしている!");
+        }
     }
 
     /**

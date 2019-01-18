@@ -29,7 +29,7 @@ public class BattleSystem {
         enemy = new EnemyDictionary(level, selectEnemy);
         characters.add(enemy);
 
-        System.out.println(enemy.name + "Lv." + level + "が出没！殲滅せよ" + hero.name + "!!");
+        System.out.print(enemy.name + "Lv." + level + "が出没！殲滅せよ" + hero.name + "!!\n");
         hero.showStatuses(enemy);
     }
 
@@ -40,14 +40,11 @@ public class BattleSystem {
     public int battleDooome(){
         while(enemy.hp > 0 && hero.hp > 0){
             round++;
-            System.out.println(round + "ターン目!");
-            //各ターン開始の合図
-            hero.turnStart();
-            enemy.turnStart();
+            System.out.print(round + "ターン目!\n");
             //勇者の行動選択
             boolean canGetAction = false;
             while(!canGetAction) {
-                System.out.println("入力:勇者の行動");
+                System.out.print(hero.name + "はどうする? :\n");
                 String str = scan.next();
                 canGetAction = hero.receiveAction(str, enemy);
             }
@@ -57,7 +54,6 @@ public class BattleSystem {
             whichHeadStart(characters);
         }
         //戦闘後の処理
-        System.out.println("戦闘終了! ");
         return result();
     }
 
@@ -67,13 +63,14 @@ public class BattleSystem {
      */
     public int result(){
         if(enemy.hp <=0){
-            System.out.println("勇者" + hero.name + "の勝利!");
+            System.out.print("戦闘終了! " + hero.name + "の勝利!\n");
+            hero.battleEnd();
             return level+1 ;
         }else if(hero.hp <= 0){
-            System.out.println("勇者" + hero.name + "は負けてしまった!");
+            System.out.print("戦闘終了! " + hero.name + "は負けてしまった!\n");
             return -1;
         }else{
-            System.out.println("想定されてないエラーが発生:result()");
+            System.out.print("想定されてないエラーが発生:result()\n");
             return -1;
         }
     }
@@ -102,7 +99,7 @@ public class BattleSystem {
                     }
                 } while (playCharacter != -1);
             } catch (IndexOutOfBoundsException e){//IndexOutOfBoundsException = リストが空 = 行動待ちキャラが居ない
-                System.out.print("ターン終了. ");
+                System.out.print("ターン終了. \n");
                 return;
             }
         }
@@ -135,10 +132,11 @@ public class BattleSystem {
         int secondEnemy = 0;
         int decidedEnemy;
         if(level%10 == 0){//ボスからは逃げられない!!
-            System.out.println("ボス部屋に着いた!");
+            System.out.print("ボス部屋に着いた!\n");
             decidedEnemy = 11;
             return decidedEnemy;
         }else {
+            System.out.print("敵と衝突しそうだ!\n");
             while (firstEnemy == secondEnemy) {
                 if(1 <= level && level < 10){//序盤は優しく
                     firstEnemy = (int) (Math.random() * 2) + 1;
@@ -167,22 +165,20 @@ public class BattleSystem {
 
         for(int i = 0; i<list.length; i++){
             switch(list[i]){
-                case 0: System.out.println(i+1 + "番, おとおと"); break;
-                case 1: System.out.println(i+1 + "番, ぷにたん"); break;
-                case 2: System.out.println(i+1 + "番, スライム"); break;
-                case 3: System.out.println(i+1 + "番, 野犬"); break;
-                case 4: System.out.println(i+1 + "番, おとおと"); break;
+                case 1: System.out.print(i+1 + "番, ぷにぷにしたスライム\n"); break;
+                case 2: System.out.print(i+1 + "番, ベトベトしたスライム\n"); break;
+                case 3: System.out.print(i+1 + "番, スレイヤーされるエネミー\n"); break;
                 default: break;
             }
         }
         do{
-            System.out.println("入力して:敵の選択");
+            System.out.print("どっちの敵の方に向かう? :\n");
             String str = scan.next();
             try{
                 charaSheet = Integer.parseInt(str)-1;
             }
             catch(NumberFormatException e){
-                System.out.println("sorry, one more please?");
+                System.out.print("sorry, one more please?\n");
             }
         }while(charaSheet != 0 && charaSheet != 1);
 

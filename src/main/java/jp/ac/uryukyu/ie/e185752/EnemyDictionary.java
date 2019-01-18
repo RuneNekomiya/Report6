@@ -27,7 +27,7 @@ public class EnemyDictionary extends UnitClass {
     public void selectStatus(){
         switch(charaSheetNumber){
             case 1:
-                name = "ぷにぷに";
+                name = "ぷにたん";
                 maxHp = 3 + level * 2;
                 hp = maxHp;
                 attack = 1 + level / 2;
@@ -59,18 +59,19 @@ public class EnemyDictionary extends UnitClass {
                 break;
             case 11:
                 name = "どらごん";
-                maxHp = 50 + level*2;
+                maxHp = 30 + level*2;
                 hp = maxHp;
-                attack = 10 + level;
+                attack = 10 + level/2;
                 armor = 2 + level/10;
                 selectSkillList.add(s_Attack);
+                selectSkillList.add(s_Stop);
                 selectSkillList.add(s_Stop);
                 break;
             default:
                 System.out.println("想定されてないエラーが発生:selectStatus()");
                 break;
         }
-    }//47行だからセーフ??
+    }//47行だからセーフだよ...きっとセーフだよ??セーフだよねお兄ちゃん??????セーフだって言ってよお兄ちゃんッ!!!!!!!!!
 
     /**
      * 敵の行動を決めるメソッド. selectStatus()に依存するのでめっちゃ簡単.
