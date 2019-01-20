@@ -6,9 +6,9 @@ import java.util.ArrayList;
  * - [ ] EnemyClass
  * */
 public class EnemyDictionary extends UnitClass {
-    int level;
-    int charaSheetNumber;
-    ArrayList<String> selectSkillList = new ArrayList<>();
+    private int level;
+    private int charaSheetNumber;
+    private ArrayList<String> selectSkillList = new ArrayList<>();
 
     /**
      * 階層を入手、そこから対応する敵キャラクターをなんかランダムで出して返す。
@@ -22,56 +22,40 @@ public class EnemyDictionary extends UnitClass {
 
     /**
      * どのキャラクターを選ぶ?
-     * name, maxHp, hp, attack, armorをレベル依存で作成します.
+     * name, maxHp, hp, attack, armorをレベル依存で作成します. また, 敵の行動AIを追加.
      */
     public void selectStatus(){
         switch(charaSheetNumber){
             case 1:
-                name = "ぷにたん";
-                maxHp = 3 + level * 2;
-                hp = maxHp;
-                attack = 1 + level / 2;
-                armor = 1;
-                selectSkillList.add(s_Attack);
-                selectSkillList.add(s_Stop);
+                setUnit("ぷにたん", 3 + level*2, 1 + level/2, 1);
+                selectSkillList.add("attack");
+                selectSkillList.add("stop");
                 break;
             case 2:
-                name = "スライム";
-                maxHp = 10 + level * 2;
-                hp = maxHp;
-                attack = 2 + level / 2;
-                armor = 3 + level / 2;
-                selectSkillList.add(s_Attack);
-                selectSkillList.add(s_Attack);
-                selectSkillList.add(s_Stop);
-                selectSkillList.add(s_Guard);
+                setUnit("スライム", 10 + level*2,  2 + level/2, 3 + level/3);
+                selectSkillList.add("attack");
+                selectSkillList.add("attack");
+                selectSkillList.add("stop");
+                selectSkillList.add("guard");
                 break;
             case 3:
-                name = "ゴブリン";
-                maxHp = 20 + level;
-                hp = maxHp;
-                attack = 5 + level / 2;
-                armor = 0;
-                selectSkillList.add(s_Attack);
-                selectSkillList.add(s_Attack);
-                selectSkillList.add(s_Stop);
-                selectSkillList.add(s_Heal);
+                setUnit("ゴブリン", 20 + level, 5 + level/2, 0);
+                selectSkillList.add("attack");
+                selectSkillList.add("attack");
+                selectSkillList.add("stop");
+                selectSkillList.add("heal");
                 break;
             case 11:
-                name = "どらごん";
-                maxHp = 30 + level*2;
-                hp = maxHp;
-                attack = 10 + level/2;
-                armor = 2 + level/10;
-                selectSkillList.add(s_Attack);
-                selectSkillList.add(s_Stop);
-                selectSkillList.add(s_Stop);
+                setUnit("フォラゴンEX", 30 + level*2, 10 + level/2, 2 + level/10);
+                selectSkillList.add("attack");
+                selectSkillList.add("attack");
+                selectSkillList.add("heal");
                 break;
             default:
                 System.out.println("想定されてないエラーが発生:selectStatus()");
                 break;
         }
-    }//47行だからセーフだよ...きっとセーフだよ??セーフだよねお兄ちゃん??????セーフだって言ってよお兄ちゃんッ!!!!!!!!!
+    }
 
     /**
      * 敵の行動を決めるメソッド. selectStatus()に依存するのでめっちゃ簡単.

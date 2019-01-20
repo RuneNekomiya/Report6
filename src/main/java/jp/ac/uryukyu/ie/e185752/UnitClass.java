@@ -3,21 +3,46 @@ package jp.ac.uryukyu.ie.e185752;
 /**
  * - [ ] UnitClass
  * メソッドごとが所有する処理にも一応種類を持たせている。
+ * 0, getter()
  * 1, 『ユニットの行動』--メソッド呼び出しが基本
  * 2, 『行動によって変動するステータスやフラグの管理』
  * 3, 『行動の許可やBattleSystemなどに関連する類』
  */
-public class UnitClass {//private化したらえげつないことになったので一度待機 
-    String name;
-    int maxHp, hp; int notAbleHealFrag = 0;
-    int attack;
-    int armor; int defenceFrag = 0;
+public class UnitClass {
+    private String name;
+    private int maxHp, hp; private int notAbleHealFrag = 0;
+    private int attack;
+    private int armor; private int defenceFrag = 0;
     String selectSkill= null;
     UnitClass target = null;
     int skillPriority = 0;
-    /* ここからコマンドリスト. --必要な理由だって? コード視認性の問題ですよ, つまり意味はほとんどありません */
-    String s_Attack="attack", s_Guard="guard", s_Heal="heal", s_Stop="stop";
 
+
+    public String getName(){ return name; }
+    public int getMaxHp(){ return maxHp; }
+    public int getHp(){ return hp; }
+    public int getAttack(){ return attack; }
+    public int getArmor(){ return armor; }
+    public int getNotAbleHealFrag(){ return notAbleHealFrag; }
+
+    /**
+     * ユニットの能力値を書き換えます. ただしその条件として, name, maxHp, attack, armor全てが初期値である必要があります.
+     * つまり本来ならコンストラクタでやるべき内容であり, 使用上無理だと判断したため条件式の厳しいsetterメソッドもどきになってます.
+     * @param name ユニットの名前
+     * @param maxHp ユニットの最大体力(現在体力も作成される)
+     * @param attack ユニットの攻撃力
+     * @param armor ユニットの装甲点
+     */
+    public void setUnit(String name, int maxHp, int attack, int armor){
+        //厳しい条件式の内容 : 名前, 最大体力, 攻撃力, 装甲点, 全てがnullまたは0の場合
+        if(this.name==null && this.maxHp==0 && this.attack==0 && this.armor==0) {
+            this.name = name;
+            this.maxHp = maxHp;
+            hp = maxHp;
+            this.attack = attack;
+            this.armor = armor;
+        }
+    }
 
     /**
      * --『行動の許可やBattleSystemなどに関連する類』
@@ -28,10 +53,10 @@ public class UnitClass {//private化したらえげつないことになった�
      */
     public void selectSkillMethod(String action, UnitClass target){
         switch(action){
-            case "attack": case "1": selectSkill = s_Attack; this.target = target; skillPriority = 0; break;
-            case "heal"  : case "3": selectSkill = s_Heal  ; this.target = target; skillPriority = 0; break;
-            case "guard" : case "2": selectSkill = s_Guard ; skillPriority = 1; break;
-            case "stop"  :           selectSkill = s_Stop  ; skillPriority = 0; break;
+            case "attack": case "1": selectSkill = "attack"; this.target = target; skillPriority = 0; break;
+            case "heal"  : case "3": selectSkill = "heal"  ; this.target = target; skillPriority = 0; break;
+            case "guard" : case "2": selectSkill = "guard" ; skillPriority = 1; break;
+            case "stop"  :           selectSkill = "stop"  ; skillPriority = 0; break;
             default: break;
         }
     }
@@ -42,20 +67,19 @@ public class UnitClass {//private化したらえげつないことになった�
      *  その内の「各自行動開始」に該当するメソッド. 行動を呼び覚ますだけとも言えるが.
      */
     public void playSkill(){
-        turnStart();
-        switch(selectSkill){
-            case "attack": attack(target); turnEnd(); break;
-            case "heal"  : heal()        ; turnEnd(); break;
-            case "guard" : guard()       ; turnEnd(); break;
-            case "stop"  : stop()        ; turnEnd(); break;
-            default: break;
+        if(canMove()){
+            switch(selectSkill){
+                case "attack": attack(target); turnEnd(); break;
+                case "heal"  : heal()        ; turnEnd(); break;
+                case "guard" : guard()       ; turnEnd(); break;
+                case "stop"  : stop()        ; turnEnd(); break;
+                default: System.out.print("想定されてないエラーが発生:playSkill()"); break;
+            }
         }
     }
 
     /**
      * --『行動の許可やBattleSystemなどに関連する類』
-     * 死んだ奴は普通動けないよなぁ??
-     * 動けるかの判定を行います. 行動の殆どにはこれを挟もう.
      * @return 動けるかの判定. trueなら動ける. 問題があるならfalseだ.
      */
     public boolean canMove(){
@@ -66,23 +90,47 @@ public class UnitClass {//private化したらえげつないことになった�
     /**
      * --『行動の許可やBattleSystemなどに関連する類』
      * 状態変化などの変更(または初期化)に用いるメソッドにturnStart()とturnEnd()の二種類があります.
-     * こちらは「行動を開始したら変更・解除される類のもの(Example:防御)」を想定して書き込んでます.
+     * こちらは「ターン開始時に変更・解除されるべき類のもの(Example:防御)」を想定して書き込んでます.
      */
     public void turnStart(){
-        if(defenceFrag > 0){ defenceFrag -= 1;}
-        if(notAbleHealFrag > 0){ notAbleHealFrag -= 1; }
+        if(defenceFrag > 0){ defenceFrag -= 1;}//防御判定の解除, またはターン経過による効果時間の減少
+        if(notAbleHealFrag > 0){ notAbleHealFrag -= 1; }//回復中毒の効果時間の減少
     }
 
     /**
      * --『行動の許可やBattleSystemなどに関連する類』
      * 状態変化などの変更(または初期化)に用いるメソッドにturnStart()とturnEnd()の二種類があります.
-     * こちらは「行動を終了したら変更・解除される類のもの(Example:スキル選択)」を想定して書き込んでます.
+     * こちらは「ユニットが行動を終了したら変更・解除されるべき類のもの(Example:スキル選択)」を想定して書き込んでます.
      */
     public void turnEnd(){
-        selectSkill = null;
-        skillPriority = 0;
-        if(maxHp < hp){ hp = maxHp; System.out.println("想定されてないエラーが発生:turnEnd().回復判定"); }
-        System.out.print("\n");
+        selectSkill = null; //選択スキルの初期化
+        skillPriority = 0;  //スキル優先度の初期化
+        if(maxHp < hp){ hp = maxHp; System.out.println("想定されてないエラーが発生:turnEnd().回復判定"); }//体力が最大体力を上回ったらエラーテキスト. でも普通に動くよ.
+        System.out.print("\n"); //相手のターンまたはターン終了になるので文章の改行
+    }
+
+    /**
+     * --『行動の許可やBattleSystemなどに関連する類』
+     * 能力が上がるよ! 成長できるって素敵!!!
+     * バトル終了後に判定起動. 中身は見て感じろ. TRPGかじった人なら一瞬で理解できるから.
+     */
+    public void levelUp(){
+        int canUpdateHp = (int)(Math.random() * 100);
+        int canUpdateAttack = (int)(Math.random() * 100);
+        int canUpdateArmor = (int)(Math.random() * 100);
+
+        if(canUpdateHp < 60){//HP成長ダイスロール. 成功判定は60
+            maxHp += 1;
+            System.out.print(name + "の最大体力が1上がった! 現在の体力は" + hp + "/" + maxHp +  "だ!\n");
+        }
+        if(canUpdateAttack < 30){//ATK成長ダイスロール. 成功判定は30
+            attack += 1;
+            System.out.print(name + "の攻撃力が1上がった! 現在の攻撃力は" + attack +  "だ!\n");
+        }
+        if(canUpdateArmor < 10){//DEF成長ダイスロール. 成功判定は10
+            armor += 1;
+            System.out.print(name + "の装甲点が1上がった! 現在の装甲点は" + armor +  "だ!\n");
+        }
     }
 
     /**
@@ -92,65 +140,62 @@ public class UnitClass {//private化したらえげつないことになった�
      * @param damage 減少するダメージ
      */
     public void decreaseHp(int damage){
-        //ダメージが負の数またはノーダメージの場合。基本的に起動しない想定
-        if(damage <= 0){
+        if(damage <= 0){//ダメージが負の数またはノーダメージの場合。基本的に起動しない想定
             System.out.print("想定されてないエラーが発生:decreaseHp()");
             return;
         }
-        //オーバーキルした場合
-        if(hp<=0){
+        if(hp<=0){//オーバーキルした場合
             System.out.print("オーバーキルだ! ヒャッハー!");
+            hp -= damage;//オーバーキルでも体力は減らす
+            return;
         }
-        //防御していた場合
-        if(defenceFrag != 0){
+        if(defenceFrag != 0){//防御していた場合
             System.out.print("しかし" + name + "は防御していたためダメージを受けない!");
             return;
         }
-        //防御していなかった場合
-        hp -= damage;
-        if (hp > 0) {
-            System.out.print(name + "の体力は" + hp + "に減ってしまった!");
-        }else{
-            System.out.print(name + "は死んでしまった へ(^A^)9");
+        else{//普通に攻撃が通るなら...
+            hp -= damage;
+            if (hp > 0) {//やったか!?->「残念だったね!」
+                System.out.print(name + "の体力は" + hp + "に減ってしまった!");
+            }else{       //やったか!?->「やったぞ..やった! 俺はあいつに勝ったんだ! ははっ, ハハハハハッ!!!」
+                System.out.print(name + "は死んでしまった へ(^A^)9");
+            }
         }
-
     }
 
     /**
      * --『行動によって変動するステータスやフラグの管理』
      * 回復点を受け取り、その分だけhpを回復させprintが起こるだけのメソッド.
      * 但しhpが回復しない例外もいくつかあります. このメソッドの存在する理由の一つである.
-     * @param heal
+     * @param heal 回復点
      */
     public void increaseHp(int heal){
-        //すでに体力最大点の場合
-        if(hp >= maxHp){
-            System.out.print("すでに" + name + "の体力は満タンだ!");
+        if(hp >= maxHp){//すでにフル体力の場合
+            System.out.print("しかしすでに" + name + "の体力は満タンだ!");
             return;
         }
-        //回復点が負の数またはノーダメージの場合。基本的に起動しない想定 → 戦闘後の自動回復で回復０点発動しやがった(怒)
-        //マイナス回復でも回復しない世界線の住民ということにしておきます.
-        if(heal <= 0){
-            System.out.print(name + "に治癒力が働いた! が、失敗した! ");
+        if(heal <= 0){//回復点が負の数またはノーダメージの場合
+            System.out.print("が、" + name +  "の治癒力は働かなかった! ");
             return;
         }
-        //体力が最大体力と等値又は上回る場合。heal連打した製作者がいるんですよ...基本的に起動しない想定
-        if(hp+heal >= maxHp){
+        if(hp+heal >= maxHp){//回復したら体力満タンになる場合
             hp = maxHp;
             System.out.print(name + "の体力は満タンになった!");
             return;
         }
-        hp += heal;
-        System.out.print(name + "は" + heal + "だけ回復した!");
-        System.out.print("今の体力は" + hp + "だ!");
+        else{//普通に回復する
+            hp += heal;
+            System.out.print(name + "は" + heal + "だけ回復した!");
+            System.out.print("今の体力は" + hp + "だ!");
+        }
     }
 
     /**
      * --『行動によって変動するステータスやフラグの管理』
-     * 純粋なダメージポイントを生成します。但し、相手の装甲を考えずに攻撃手の状態から算出するので「装甲点の減算を含めたダメージ」はattack()などにあります.
-     * 製作者「ダメージは乱数で作りたいよね(無思考の乱数主義者的発想)」
+     * 純粋なダメージポイントを生成します. 但し, 相手の装甲を考えずに攻撃手の状態から算出するので「装甲点の減算を含めたダメージ」はattack()などにあります.
+     * 製作者「ダメージは乱数で作りたいよね(特に何も考えてない乱数主義者みたいな発想)」
      * @param magnification ダメージ倍率. 2倍のダメージを与える場合はこちらに2を入れるとよろしい
-     * @return ダメージポイント(但し装甲は加味しない)
+     * @return 純粋なダメージポイントを生成します
      */
     public int damagePoint(float magnification){
         //乱数=(0.8~1.2)倍 = 0.8+ [0 ~ 0.4]
@@ -165,15 +210,13 @@ public class UnitClass {//private化したらえげつないことになった�
      * @param target 標的となる敵方
      */
     public void attack(UnitClass target){
-        if(canMove()){
-            int damage = damagePoint(1) - target.armor;
-            if(damage <= 0){
-                System.out.print(name + "の攻撃！しかし" + target.name + "にダメージを与えられない! ");
-                return;
-            }else{
-                System.out.print(name + "の攻撃！" + damage + "のダメージを与えた! ");
-                target.decreaseHp(damage);
-            }
+        int damage = damagePoint(1) - target.armor;
+        if(damage <= 0){//もしも装甲点に攻撃を吸収された場合
+            System.out.print(name + "の攻撃！しかし" + target.name + "にダメージを与えられない! ");
+            return;
+        }else{//普通に攻撃が通る場合
+            System.out.print(name + "の攻撃！" + damage + "のダメージを与えた! ");
+            target.decreaseHp(damage);
         }
     }
 
@@ -183,27 +226,39 @@ public class UnitClass {//private化したらえげつないことになった�
      * defenceFragを立て, その後のdecreaseHp()判定部分に影響してきます.
      */
     public void guard(){
-        if(canMove()){
-            defenceFrag += 1;
-            System.out.print(name + "は防御した!");
-        }
+        defenceFrag += 1;
+        System.out.print(name + "は防御した!");
     }
 
     /**
      * --『ユニットの行動』
-     * 最大体力の３割だけ回復します(仮)
-     * 仕様上のスキルとして残してますので, 後々効果や発動条件が変わるかもしれません.
+     * 最大体力の３割だけ回復します.
+     * Q. なんで３割なの?
+     * A. 特に意味はありません. 強いていうなら今のゲームバランスだと３割がデバッグしやすかった. 悪気はなかった, 反省している.
      */
     public void heal(){
-        if(canMove()) {
-            if(notAbleHealFrag == 0) {
-                notAbleHealFrag += 3;
-                int healPoint = maxHp * 3 / 10;
-                increaseHp(healPoint);
-            }else{
-                System.out.print(name + "は回復中毒になっているため回復できない!");
-            }
+        if(notAbleHealFrag > 0){//回復中毒フラグが立っている場合
+            System.out.print(name + "は回復中毒になっているため回復できない!");
         }
+        else{//普通に回復できる場合
+            notAbleHealFrag += 3;//三ターン回復禁止令を発令
+            int healPoint = maxHp * 3 / 10;//最大体力の三割回復
+            System.out.print(name + "は回復した! ");
+            increaseHp(healPoint);
+        }
+    }
+
+    /**
+     * 回復中毒や防御判定などの一時的な状態変化を解除します. また, 体力をほんの少しだけ回復させます.
+     * 現使用上だと, スキルとしての仕様というよりはバトル終了としての意味合いが強いです.
+     */
+    public void refresh(){
+        defenceFrag = 0; notAbleHealFrag = 0;//フラグの初期化
+        selectSkill = null; skillPriority = 0;//スキル決定の初期化
+        int healPoint = (int)(maxHp * Math.random() * 3 / 10);//回復量0~3割. 若干弱め
+        System.out.print(name + "は自然治癒力を酷使した! ");
+        increaseHp(healPoint);
+        System.out.print("\n");//文章がちょっと不自然なので挿入
     }
 
     /**
@@ -212,33 +267,7 @@ public class UnitClass {//private化したらえげつないことになった�
      * 何もしません.
      */
     public void stop(){
-        if(canMove()) {
-            System.out.print(name + "はボケーっとしている!");
-        }
-    }
-
-    /**
-     * コマンド紹介. 起動時に呼び出されるしコマンドコールでも呼び出される子.
-     * System.out.println()しかやらないので返り値はvoidだしメソッド呼び出しも無い.
-     * 序盤過ぎればほぼ要らない子だが必ず必要とも言える.
-     * (1エンター毎に表記できるようになる工夫が欲しいなぁ(チラッチラッ))
-     */
-    public void commandHelp(){
-        System.out.println("attack、または1で攻撃します。");
-        System.out.println("defence、または2で防御します。");
-        System.out.println("heal、または3で回復します。");
-        System.out.println("show、または0でステータス開示します。");
-        System.out.println("困った場合はhelp、または?でコマンド解説します。");
-        System.out.println("--------------------");//改行表現
-    }
-
-    /**
-     * ステータス紹介. 毎勝負ごとに呼び出される子.
-     * System.out.println()しかやらないので返り値はvoidだしメソッド呼び出しも無い.
-     */
-    public void showStatuses(UnitClass enemy){
-        System.out.println(name + "のステータス\t体力:" + hp + "/" + maxHp + ", 攻撃:" + attack + ", 装甲:" + armor);
-        System.out.println(enemy.name + "のステータス\t体力:" + enemy.hp + "/" + enemy.maxHp + ", 攻撃:" + enemy.attack + ", 装甲:" + enemy.armor);
+        System.out.print(name + "はボケーっとしている!");
     }
 
 }

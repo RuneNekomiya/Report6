@@ -21,6 +21,6 @@ public class Main {
             battle = new BattleSystem(hero, level);
             level = battle.battleDooome();
         }
-        System.out.print(hero.name + "の冒険はここで終わってしまったよ〜(^^)b\n");
+        System.out.print(hero.getName() + "の冒険はここで終わってしまったよ〜(^^)b\n");
     }
 }
